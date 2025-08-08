@@ -1,25 +1,31 @@
-// ✅ 正确：没有 'use client'
-// ❌ 错误：'use client' 仍在第一行
+'use client'
 
+import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
-import { notFound } from 'next/navigation'
+import { notFound, useParams } from 'next/navigation'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
-type Props = { params: { id: string } }      // 辅助类型（可留可不留）
+type User = { id: string; name: string | null; gender?: string; birth_date?: string; phone?: string }
 
-export default async function Page({ params }: Props) {
-  const { id } = params
-  const { data, error } = await supabase
-    .from('users')
-    .select('*')
-    .eq('id', id)
-    .single()
+export default function MemberDetail() {
+  const { id } = useParams<{ id: string }>()      // 从 URL 取 id
+  const [data, setData] = useState<User | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
-  if (error || !data) notFound()
+  useEffect(() => {
+    supabase.from('users').select('*').eq('id', id).single()
+      .then(({ data, error }) => {
+        if (error || !data) setError('not-found')
+        else setData(data as User)
+      })
+  }, [id])
+
+  if (error) notFound()
+  if (!data) return <main className="min-h-screen flex items-center justify-center bg-black text-white">加载中…</main>
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center gap-6 bg-black text-white">
