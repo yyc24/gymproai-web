@@ -1,3 +1,6 @@
+// ✅ 正确：没有 'use client'
+// ❌ 错误：'use client' 仍在第一行
+
 import { createClient } from '@supabase/supabase-js'
 import { notFound } from 'next/navigation'
 
@@ -6,7 +9,9 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
-export default async function MemberDetail({ params }: { params: { id: string } }) {
+type Props = { params: { id: string } }      // 辅助类型（可留可不留）
+
+export default async function Page({ params }: Props) {
   const { id } = params
   const { data, error } = await supabase
     .from('users')
